@@ -51,15 +51,16 @@ export class MeetingsService {
   }
 
   
-  async findMine(userId: number) {
-    return this.meetingRepo
-      .createQueryBuilder('m')
-      .leftJoin('m.participants', 'p')
-      .where('p.id = :id', { id: userId })
-      .andWhere('m.isActive = true')
-      .orderBy('m.startAt', 'ASC')
-      .getMany();
-  }
+ async findMine(userId: number) {
+  return this.meetingRepo
+    .createQueryBuilder('m')
+    .leftJoinAndSelect('m.participants', 'p')
+    .where('p.id = :id', { id: userId })
+    .andWhere('m.isActive = true')
+    .orderBy('m.startAt', 'ASC')
+    .getMany();
+}
+
 
   async getMineById(userId: number, meetingId: number) {
     const meeting = await this.meetingRepo.findOne({

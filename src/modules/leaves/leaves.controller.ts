@@ -42,4 +42,9 @@ export class LeavesController {
   decide(@Param('id', ParseIntPipe) id: number, @Body() dto: AdminDecisionDto) {
     return this.leavesService.decide(id, dto);
   }
+  @Get('mine')
+findMine(@Req() req: any) {
+  return this.leavesService.findMine(req.user.userId);
+}
+
 }

@@ -130,6 +130,12 @@ async getOne(id: number) {
     days,
   };
 }
+async findMine(employeeUserId: number) {
+  return this.leaveRepo.find({
+    where: { employee: { id: employeeUserId } as any },
+    order: { createdAt: 'DESC' },
+  });
+}
 
 
   async decide(id: number, dto: AdminDecisionDto) {

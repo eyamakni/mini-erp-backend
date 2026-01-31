@@ -11,4 +11,8 @@ export class EmployeeController {
   getDashboard(@Req() req: any) {
     return this.service.getEmployeeDashboard(req.user.userId);
   }
+  @Get('employees')
+  listEmployees() {
+    return this.service.listEmployees();
+  }
 }

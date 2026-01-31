@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 
 import { LeaveRequest, LeaveStatus } from '../../entities/leave-request.entity';
 import { Meeting } from '../../entities/meeting.entity';
+import { User, UserRole } from '../../entities/user.entity';
 
 @Injectable()
 export class EmployeeService {
@@ -13,15 +14,18 @@ export class EmployeeService {
 
     @InjectRepository(Meeting)
     private readonly meetingRepo: Repository<Meeting>,
+
+    @InjectRepository(User)
+    private readonly usersRepo: Repository<User>,
   ) {}
 
- 
+
   async getEmployeeDashboard(userId: number) {
-    // ===== 1) Leaves stats =====
     const rawLeaves = await this.leaveRepo
       .createQueryBuilder('l')
       .select('l.status', 'status')
       .addSelect('COUNT(*)', 'count')
+
       .where('l.employeeId = :id', { id: userId })
       .groupBy('l.status')
       .getRawMany();
@@ -42,14 +46,13 @@ export class EmployeeService {
 
     const now = new Date();
 
-   const upcomingMeetingsCount = await this.meetingRepo
-  .createQueryBuilder('m')
-  .innerJoin('m.participants', 'p', 'p.id = :id', { id: userId })
-  .andWhere('m.isActive = true')
-  .andWhere('m.startAt >= :now', { now })
-  .distinct(true)
-  .getCount();
-
+    const upcomingMeetingsCount = await this.meetingRepo
+      .createQueryBuilder('m')
+      .innerJoin('m.participants', 'p', 'p.id = :id', { id: userId })
+      .andWhere('m.isActive = true')
+      .andWhere('m.startAt >= :now', { now })
+      .distinct(true)
+      .getCount();
 
     const upcomingMeetings = await this.meetingRepo
       .createQueryBuilder('m')
@@ -68,5 +71,20 @@ export class EmployeeService {
       upcomingMeetingsCount,
       upcomingMeetings,
     };
+  }
+
+
+  async listEmployees() {
+    return this.usersRepo.find({
+      where: { role: UserRole.EMPLOYEE, isActive: true },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        position: true,
+      },
+      order: { firstName: 'ASC' as any },
+    });
   }
 }
